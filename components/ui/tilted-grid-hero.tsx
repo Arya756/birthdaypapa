@@ -101,8 +101,8 @@ export function TiltedGridHero({
 
   // ── drag / fling state ────────────────────────────────────────
   const offsetRef = React.useRef(0);
-  const velRef = React.useRef(0);
-  const dragRef = React.useRef<{ x: number; t: number } | null>(null);
+  const flingVelRef = React.useRef(0);
+  const dragRef = React.useRef<{ x: number; t: number; lastX: number } | null>(null);
   const rafRef = React.useRef<number>(0);
   const isDraggingRef = React.useRef(false);
 
@@ -129,13 +129,13 @@ export function TiltedGridHero({
     [speed],
   );
 
-  // Physics loop: fling decay + apply offset every frame
+  // Physics loop: smooth fling inertia when released without snapping back
   const runPhysics = React.useCallback(() => {
-    if (!isDraggingRef.current) {
-      offsetRef.current *= 0.93;
-      if (Math.abs(offsetRef.current) < 0.002) offsetRef.current = 0;
+    if (!isDraggingRef.current && Math.abs(flingVelRef.current) > 0.0001) {
+      offsetRef.current += flingVelRef.current;
+      flingVelRef.current *= 0.92; // smooth decay
+      applyOffset(columns);
     }
-    applyOffset(columns);
     rafRef.current = requestAnimationFrame(runPhysics);
   }, [applyOffset, columns]);
 
@@ -147,23 +147,26 @@ export function TiltedGridHero({
   // ── pointer handlers ──────────────────────────────────────────
   const onPointerDown = React.useCallback((e: React.PointerEvent) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {}
     isDraggingRef.current = true;
     setIsDragging(true);
-    dragRef.current = { x: e.clientX, t: performance.now() };
-    velRef.current = 0;
+    flingVelRef.current = 0;
+    dragRef.current = { x: e.clientX, t: performance.now(), lastX: e.clientX };
     setSpeedLabel("↔ Drag");
   }, []);
 
   const onPointerMove = React.useCallback(
     (e: React.PointerEvent) => {
-      if (!dragRef.current) return;
+      if (!dragRef.current || !isDraggingRef.current) return;
       const now = performance.now();
-      const dx = e.clientX - dragRef.current.x;
+      const dx = e.clientX - dragRef.current.lastX;
       const dt = Math.max(1, now - dragRef.current.t);
-      velRef.current = dx / dt; // px/ms
+      const vel = dx / dt; // px/ms
 
-      dragRef.current = { x: e.clientX, t: now };
+      dragRef.current.lastX = e.clientX;
+      dragRef.current.t = now;
 
       const containerW = ref.current?.clientWidth ?? window.innerWidth;
       const containerH = ref.current?.clientHeight ?? window.innerHeight;
@@ -171,37 +174,54 @@ export function TiltedGridHero({
         (tileHeight / 100) * containerH * aspectRatio,
         (maxWidth / 100) * containerW,
       );
-      const secPerPx = speed / Math.max(tilePx, 1);
+      // Natural 1:1 direct feel:
+      const secPerPx = (speed / Math.max(tilePx, 1)) * 1.5;
       offsetRef.current += dx * secPerPx;
+      applyOffset(columns);
 
-      const absVel = Math.abs(velRef.current);
-      if (absVel > 0.6) setSpeedLabel("⚡ Fast");
+      // Track fling momentum in animation-seconds per frame
+      flingVelRef.current = vel * 16.67 * secPerPx;
+
+      const absVel = Math.abs(vel);
+      if (absVel > 0.7) setSpeedLabel("⚡ Fast");
       else if (absVel < 0.15) setSpeedLabel("🐢 Slow");
       else setSpeedLabel("↔ Drag");
     },
-    [tileHeight, aspectRatio, maxWidth, speed],
+    [tileHeight, aspectRatio, maxWidth, speed, applyOffset, columns],
   );
 
   const onPointerUp = React.useCallback(
     (e: React.PointerEvent) => {
-      if (!dragRef.current) return;
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      if (!isDraggingRef.current) return;
+      try {
+        if ((e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) {
+          (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+        }
+      } catch {}
       isDraggingRef.current = false;
       setIsDragging(false);
       setSpeedLabel(null);
+      dragRef.current = null;
+    },
+    [],
+  );
 
+  // Wheel / trackpad horizontal scrolling
+  const onWheel = React.useCallback(
+    (e: React.WheelEvent) => {
+      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? -e.deltaX : -e.deltaY * 0.35;
+      if (Math.abs(dx) < 0.5) return;
       const containerW = ref.current?.clientWidth ?? window.innerWidth;
       const containerH = ref.current?.clientHeight ?? window.innerHeight;
       const tilePx = Math.min(
         (tileHeight / 100) * containerH * aspectRatio,
         (maxWidth / 100) * containerW,
       );
-      const secPerPx = speed / Math.max(tilePx, 1);
-      // Fling: extrapolate ~120 ms of momentum
-      offsetRef.current += velRef.current * 120 * secPerPx;
-      dragRef.current = null;
+      const secPerPx = (speed / Math.max(tilePx, 1)) * 1.2;
+      offsetRef.current += dx * secPerPx;
+      applyOffset(columns);
     },
-    [tileHeight, aspectRatio, maxWidth, speed],
+    [tileHeight, aspectRatio, maxWidth, speed, applyOffset, columns],
   );
 
   // ── resize observer ───────────────────────────────────────────
@@ -264,13 +284,23 @@ export function TiltedGridHero({
   return (
     <div
       ref={ref}
-      className={cn("relative overflow-hidden", className)}
+      className={cn(
+        "relative overflow-hidden select-none cursor-grab active:cursor-grabbing",
+        className,
+      )}
       {...props}
-      style={{ containerType: "size", ...props.style }}
+      style={{
+        containerType: "size",
+        touchAction: "pan-y",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        ...props.style,
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onWheel={onWheel}
     >
       <style>{css}</style>
 

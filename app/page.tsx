@@ -74,12 +74,12 @@ export default function Page() {
           fade={isMobile ? 10 : 10}
           className="absolute inset-0"
         >
-          {/* Heading sits above the carousel band */}
-          <div className="relative z-10 flex h-full flex-col items-center justify-between px-5 pb-6 pt-10 text-center select-none">
+          {/* Heading sits above the carousel band — pointer-events-none lets drag gestures pass directly to carousel */}
+          <div className="pointer-events-none relative z-10 flex h-full flex-col items-center justify-between px-5 pb-6 pt-10 text-center select-none">
             {/* Title */}
             <div
               onClick={triggerPartyBomber}
-              className="group flex cursor-pointer flex-col items-center gap-1 transition-transform active:scale-95"
+              className="pointer-events-auto group flex cursor-pointer flex-col items-center gap-1 transition-transform active:scale-95"
               title="Tap for party popper! 🎉"
             >
               <p
@@ -98,7 +98,7 @@ export default function Page() {
             {/* Scroll cue */}
             <button
               onClick={() => go("letter")}
-              className="flex flex-col items-center gap-1 rounded-full px-4 py-2 text-[#2e2a26]/60 transition-colors active:text-[#2e2a26]"
+              className="pointer-events-auto flex flex-col items-center gap-1 rounded-full px-4 py-2 text-[#2e2a26]/60 transition-colors active:text-[#2e2a26]"
             >
               <span className="font-[family-name:var(--font-hand)] text-lg">
                 See the letter
