@@ -4,8 +4,7 @@ import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { TiltedGridHero } from "@/components/ui/tilted-grid-hero";
 
-// Placeholder photos. Replace the files in /public/photos (or edit this list)
-// with your dad's pictures. 8–10 photos works best.
+// Photos from /public/photos — add more by copying photo-7.jpeg, photo-8.jpeg etc.
 const IMAGES = [
   { src: "/photos/photo-1.jpeg", alt: "Papa" },
   { src: "/photos/photo-2.jpeg", alt: "Papa" },
@@ -13,8 +12,6 @@ const IMAGES = [
   { src: "/photos/photo-4.jpeg", alt: "Papa" },
   { src: "/photos/photo-5.jpeg", alt: "Papa" },
   { src: "/photos/photo-6.jpeg", alt: "Papa" },
-  { src: "/photos/photo-7.jpeg", alt: "Papa" },
-  { src: "/photos/photo-8.jpeg", alt: "Papa" },
 ];
 
 const SECTIONS = [
