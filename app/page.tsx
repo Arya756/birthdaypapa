@@ -19,8 +19,23 @@ const SECTIONS = [
   { id: "letter", label: "Letter" },
 ];
 
+// Returns true on screens narrower than 640 px (Tailwind's sm breakpoint).
+// SSR-safe: starts as false so server and first client paint agree.
+function useMobile() {
+  const [mobile, setMobile] = React.useState(false);
+  React.useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    setMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return mobile;
+}
+
 export default function Page() {
   const [active, setActive] = React.useState("hero");
+  const isMobile = useMobile();
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(
@@ -73,8 +88,8 @@ export default function Page() {
       >
         <TiltedGridHero
           images={IMAGES}
-          /* Phone-optimised: taller portrait tiles, slower speed */
-          tileHeight={44}
+          /* Half-size tiles on phone, full size on tablet+ */
+          tileHeight={isMobile ? 22 : 44}
           aspectRatio={3 / 4}
           axis={52}
           speed={4}
