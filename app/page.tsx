@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, PartyPopper } from "lucide-react";
 import { TiltedGridHero } from "@/components/ui/tilted-grid-hero";
+import { triggerPartyBomber } from "@/lib/confetti";
 
 // Photos from /public/photos — add more by copying photo-7.jpeg, photo-8.jpeg etc.
 const IMAGES = [
@@ -37,6 +38,14 @@ export default function Page() {
   const [active, setActive] = React.useState("hero");
   const isMobile = useMobile();
 
+  // Trigger macOS FaceTime style party bomber on initial page open
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      triggerPartyBomber();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
+
   React.useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -58,6 +67,16 @@ export default function Page() {
 
   return (
     <main className="overflow-x-hidden">
+      {/* ── Party Bomber button (macOS video reaction style) ── */}
+      <button
+        onClick={triggerPartyBomber}
+        aria-label="Celebrate with party popper"
+        title="Tap to celebrate! 🎉"
+        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#fffdf8]/90 text-[#2e2a26] shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#b8862b] hover:text-white active:scale-90"
+      >
+        <PartyPopper className="h-5 w-5" />
+      </button>
+
       {/* ── Side navigation dots ── */}
       <nav
         aria-label="Page sections"
@@ -102,9 +121,13 @@ export default function Page() {
           {/* Heading sits above the carousel band */}
           <div className="relative z-10 flex h-full flex-col items-center justify-between px-5 pb-6 pt-10 text-center select-none">
             {/* Title */}
-            <div className="flex flex-col items-center gap-1">
+            <div
+              onClick={triggerPartyBomber}
+              className="group flex cursor-pointer flex-col items-center gap-1 transition-transform active:scale-95"
+              title="Tap for party popper! 🎉"
+            >
               <p
-                className="font-[family-name:var(--font-hand)] text-sm tracking-widest text-[#b8862b]/80"
+                className="font-[family-name:var(--font-hand)] text-sm tracking-widest text-[#b8862b]/80 group-hover:text-[#b8862b]"
                 style={{ letterSpacing: "0.18em" }}
               >
                 A little something for you
