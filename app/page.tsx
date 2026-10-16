@@ -7,14 +7,14 @@ import { TiltedGridHero } from "@/components/ui/tilted-grid-hero";
 // Placeholder photos. Replace the files in /public/photos (or edit this list)
 // with your dad's pictures. 8–10 photos works best.
 const IMAGES = [
-  { src: "/photos/photo-1.jpg", alt: "Papa" },
-  { src: "/photos/photo-2.jpg", alt: "Papa" },
-  { src: "/photos/photo-3.jpg", alt: "Papa" },
-  { src: "/photos/photo-4.jpg", alt: "Papa" },
-  { src: "/photos/photo-5.jpg", alt: "Papa" },
-  { src: "/photos/photo-6.jpg", alt: "Papa" },
-  { src: "/photos/photo-7.jpg", alt: "Papa" },
-  { src: "/photos/photo-8.jpg", alt: "Papa" },
+  { src: "/photos/photo-1.jpeg", alt: "Papa" },
+  { src: "/photos/photo-2.jpeg", alt: "Papa" },
+  { src: "/photos/photo-3.jpeg", alt: "Papa" },
+  { src: "/photos/photo-4.jpeg", alt: "Papa" },
+  { src: "/photos/photo-5.jpeg", alt: "Papa" },
+  { src: "/photos/photo-6.jpeg", alt: "Papa" },
+  { src: "/photos/photo-7.jpeg", alt: "Papa" },
+  { src: "/photos/photo-8.jpeg", alt: "Papa" },
 ];
 
 const SECTIONS = [
@@ -60,11 +60,10 @@ export default function Page() {
             className="group flex h-6 w-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8862b]"
           >
             <span
-              className={`block rounded-full transition-all duration-300 ${
-                active === id
-                  ? "h-3 w-3 bg-[#b8862b]"
-                  : "h-2 w-2 bg-[#2e2a26]/30 group-hover:bg-[#2e2a26]/60"
-              }`}
+              className={`block rounded-full transition-all duration-300 ${active === id
+                ? "h-3 w-3 bg-[#b8862b]"
+                : "h-2 w-2 bg-[#2e2a26]/30 group-hover:bg-[#2e2a26]/60"
+                }`}
             />
           </button>
         ))}
@@ -145,17 +144,33 @@ export default function Page() {
             >
               <p>Dear Papa,</p>
               <p className="mt-[34px]">
-                Happy birthday! Thank you for every early morning, every quiet
-                sacrifice, and every time you believed in me before I did.
+                Happy Birthday Papa. Hamlog aise zyada express nahi karte hain
+                ek dusre ko bolke, but I really Love you and I am so proud to
+                be your Son.
               </p>
               <p className="mt-[34px]">
-                I hope this year brings you as much joy as you have given our
-                family. (This is a sample letter — the real one goes here.)
+                Aap jis way mein poore ghar ko sambhalte hain, jis way mein
+                hamlog ko support karte hain, aur itna chill rehte hain — itni
+                sari responsibilities ke baawajood — wo kar paana kafi mushkil
+                hai kisi ke liye bhi.
+              </p>
+              <p className="mt-[34px]">
+                Hamlog bohot lucky aur gifted hain ki aap hamare Papa hain.
+                Aapse bahut strength milti hai. Ye sab cheezein hum bol nahi
+                paate kabhi — lekin hum chahte hain ki aap jaano.
+              </p>
+              <p className="mt-[34px]">
+                Ek din hum bhi aapke jaisa banna chahte hain — aapke liye aur
+                aas-paas sabke liye.
+              </p>
+              <p className="mt-[34px]">
+                I wish you a very Happy Birthday, Papa. Aise hi acche se raho
+                hamesha. Ek din hum bhi aapka strength banenge. 🎂
               </p>
               <p className="mt-[34px] text-right">
                 With all my love,
                 <br />
-                Ayush
+                Ayush Aryan
               </p>
             </div>
           </div>
