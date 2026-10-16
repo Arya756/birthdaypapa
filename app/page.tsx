@@ -15,11 +15,6 @@ const IMAGES = [
   { src: "/photos/photo-6.jpeg", alt: "Papa" },
 ];
 
-const SECTIONS = [
-  { id: "hero", label: "Photos" },
-  { id: "letter", label: "Letter" },
-];
-
 // Returns true on screens narrower than 640 px (Tailwind's sm breakpoint).
 // SSR-safe: starts as false so server and first client paint agree.
 function useMobile() {
@@ -35,7 +30,6 @@ function useMobile() {
 }
 
 export default function Page() {
-  const [active, setActive] = React.useState("hero");
   const isMobile = useMobile();
 
   // Trigger macOS FaceTime style party bomber on initial page open
@@ -44,22 +38,6 @@ export default function Page() {
       triggerPartyBomber();
     }, 400);
     return () => clearTimeout(timer);
-  }, []);
-
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) setActive(e.target.id);
-        }
-      },
-      { threshold: 0.5 },
-    );
-    SECTIONS.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
   }, []);
 
   const go = (id: string) =>
@@ -77,28 +55,6 @@ export default function Page() {
         <PartyPopper className="h-5 w-5" />
       </button>
 
-      {/* ── Side navigation dots ── */}
-      <nav
-        aria-label="Page sections"
-        className="fixed right-3 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-3"
-      >
-        {SECTIONS.map(({ id, label }) => (
-          <button
-            key={id}
-            onClick={() => go(id)}
-            aria-label={`Go to ${label}`}
-            aria-current={active === id}
-            className="group flex h-6 w-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8862b]"
-          >
-            <span
-              className={`block rounded-full transition-all duration-300 ${active === id
-                ? "h-3 w-3 bg-[#b8862b]"
-                : "h-2 w-2 bg-[#2e2a26]/30 group-hover:bg-[#2e2a26]/60"
-                }`}
-            />
-          </button>
-        ))}
-      </nav>
 
       {/* ── Page 1: photo carousel ── */}
       <section
