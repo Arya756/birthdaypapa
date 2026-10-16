@@ -1,0 +1,19 @@
+/* Add these to the END of app/globals.css (after shadcn init) */
+
+html {
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+  background: #fbf8f2;
+  color-scheme: light;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Force the shadcn light theme background to match the site */
+:root {
+  --background: #fbf8f2;
+}

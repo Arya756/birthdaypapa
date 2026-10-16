@@ -1,69 +1,174 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import * as React from "react";
+import { ChevronDown } from "lucide-react";
+import { TiltedGridHero } from "@/components/ui/tilted-grid-hero";
+
+// Placeholder photos. Replace the files in /public/photos (or edit this list)
+// with your dad's pictures. 8–10 photos works best.
+const IMAGES = [
+  { src: "/photos/photo-1.jpg", alt: "Papa" },
+  { src: "/photos/photo-2.jpg", alt: "Papa" },
+  { src: "/photos/photo-3.jpg", alt: "Papa" },
+  { src: "/photos/photo-4.jpg", alt: "Papa" },
+  { src: "/photos/photo-5.jpg", alt: "Papa" },
+  { src: "/photos/photo-6.jpg", alt: "Papa" },
+  { src: "/photos/photo-7.jpg", alt: "Papa" },
+  { src: "/photos/photo-8.jpg", alt: "Papa" },
+];
+
+const SECTIONS = [
+  { id: "hero", label: "Photos" },
+  { id: "letter", label: "Letter" },
+];
+
+export default function Page() {
+  const [active, setActive] = React.useState("hero");
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) setActive(e.target.id);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    SECTIONS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const go = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="overflow-x-hidden">
+      {/* ── Side navigation dots ── */}
+      <nav
+        aria-label="Page sections"
+        className="fixed right-3 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-3"
+      >
+        {SECTIONS.map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => go(id)}
+            aria-label={`Go to ${label}`}
+            aria-current={active === id}
+            className="group flex h-6 w-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8862b]"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+            <span
+              className={`block rounded-full transition-all duration-300 ${
+                active === id
+                  ? "h-3 w-3 bg-[#b8862b]"
+                  : "h-2 w-2 bg-[#2e2a26]/30 group-hover:bg-[#2e2a26]/60"
+              }`}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          </button>
+        ))}
+      </nav>
+
+      {/* ── Page 1: photo carousel ── */}
+      <section
+        id="hero"
+        className="relative flex h-svh flex-col snap-start overflow-hidden bg-[#fbf8f2]"
+      >
+        <TiltedGridHero
+          images={IMAGES}
+          /* Phone-optimised: taller portrait tiles, slower speed */
+          tileHeight={44}
+          aspectRatio={3 / 4}
+          axis={52}
+          speed={4}
+          curve={72}
+          fade={10}
+          className="absolute inset-0"
+        >
+          {/* Heading sits above the carousel band */}
+          <div className="relative z-10 flex h-full flex-col items-center justify-between px-5 pb-6 pt-10 text-center select-none">
+            {/* Title */}
+            <div className="flex flex-col items-center gap-1">
+              <p
+                className="font-[family-name:var(--font-hand)] text-sm tracking-widest text-[#b8862b]/80"
+                style={{ letterSpacing: "0.18em" }}
+              >
+                A little something for you
+              </p>
+              <h1 className="font-[family-name:var(--font-script)] text-[2.6rem] font-bold leading-tight text-[#2e2a26]">
+                Happy Birthday
+                <br />
+                Papa
+              </h1>
+            </div>
+
+            {/* Scroll cue */}
+            <button
+              onClick={() => go("letter")}
+              className="flex flex-col items-center gap-1 rounded-full px-4 py-2 text-[#2e2a26]/60 transition-colors active:text-[#2e2a26]"
+            >
+              <span className="font-[family-name:var(--font-hand)] text-lg">
+                See the letter
+              </span>
+              <ChevronDown className="h-5 w-5 animate-bounce motion-reduce:animate-none" />
+            </button>
+          </div>
+        </TiltedGridHero>
+      </section>
+
+      {/* ── Page 2: letter ── */}
+      <section
+        id="letter"
+        className="flex min-h-svh snap-start flex-col items-center justify-center bg-[#fbf8f2] px-4 py-14"
+      >
+        {/* Paper card */}
+        <article
+          className="relative w-full max-w-sm rounded-sm bg-[#fffdf8] shadow-[0_2px_4px_rgba(46,42,38,0.08),0_18px_40px_-12px_rgba(46,42,38,0.25)]"
+          style={{ transform: "rotate(-1deg)" }}
+        >
+          {/* Ruled lines */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 opacity-35"
+            style={{
+              top: "3.5rem",
+              bottom: "3rem",
+              backgroundImage:
+                "repeating-linear-gradient(to bottom, transparent 0, transparent 33px, #d9cfbd 33px, #d9cfbd 34px)",
+            }}
+          />
+
+          <div className="px-7 pb-10 pt-8">
+            <div
+              className="relative font-[family-name:var(--font-hand)] text-[1.35rem] leading-[34px] text-[#2e2a26]"
+            >
+              <p>Dear Papa,</p>
+              <p className="mt-[34px]">
+                Happy birthday! Thank you for every early morning, every quiet
+                sacrifice, and every time you believed in me before I did.
+              </p>
+              <p className="mt-[34px]">
+                I hope this year brings you as much joy as you have given our
+                family. (This is a sample letter — the real one goes here.)
+              </p>
+              <p className="mt-[34px] text-right">
+                With all my love,
+                <br />
+                Ayush
+              </p>
+            </div>
+          </div>
+        </article>
+
+        {/* Back to top */}
+        <button
+          onClick={() => go("hero")}
+          className="mt-10 font-[family-name:var(--font-hand)] text-base text-[#2e2a26]/50 underline-offset-4 transition-colors active:text-[#2e2a26]"
+        >
+          ↑ Back to photos
+        </button>
+      </section>
+    </main>
   );
 }
