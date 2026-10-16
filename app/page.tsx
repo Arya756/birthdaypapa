@@ -3,7 +3,6 @@
 import * as React from "react";
 import { ChevronDown, PartyPopper, Volume2, VolumeX } from "lucide-react";
 import { TiltedGridHero } from "@/components/ui/tilted-grid-hero";
-import { ChocolateCake } from "@/components/ui/chocolate-cake";
 import { triggerPartyBomber } from "@/lib/confetti";
 
 // Photos from /public/photos — all 17 photos looping continuously
@@ -127,6 +126,28 @@ export default function Page() {
     const letterEl = document.getElementById("letter");
     if (letterEl) observer.observe(letterEl);
 
+    // ── Persistence across refresh ──────────────────────────────────────────
+    // If the user already triggered music in a previous session, play on
+    // their very first interaction after refresh — no scrolling needed.
+    const MUSIC_KEY = "papa-birthday-music-enabled";
+
+    if (localStorage.getItem(MUSIC_KEY) === "true") {
+      const onFirstGesture = () => triggerPlay();
+      window.addEventListener("click",      onFirstGesture, { capture: true, once: true });
+      window.addEventListener("touchstart", onFirstGesture, { capture: true, once: true });
+      window.addEventListener("keydown",    onFirstGesture, { capture: true, once: true });
+      window.addEventListener("scroll",     onFirstGesture, { capture: true, once: true });
+      window.addEventListener("wheel",      onFirstGesture, { capture: true, once: true });
+    }
+
+    // Save preference the moment music successfully starts for the first time
+    const onFirstPlay = () => {
+      localStorage.setItem(MUSIC_KEY, "true");
+      audio.removeEventListener("play", onFirstPlay);
+    };
+    audio.addEventListener("play", onFirstPlay);
+    // ───────────────────────────────────────────────────────────────────────
+
     window.addEventListener("scroll", onScrollAttempt, { passive: true });
     document.addEventListener("scroll", onScrollAttempt, { passive: true });
     window.addEventListener("wheel", onWheelAttempt, { passive: true, capture: true });
@@ -138,6 +159,7 @@ export default function Page() {
       removeScrollListeners();
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("play", onFirstPlay);
       audio.pause();
     };
   }, []);
@@ -238,13 +260,23 @@ export default function Page() {
 
             {/* Bottom section: 3D Chocolate Cake + Scroll navigation */}
             <div className="flex flex-col items-center">
-              {/* Rotating 3D Chocolate Cake with candle */}
+              {/* Birthday Cake image */}
               <div
                 onClick={triggerPartyBomber}
                 className="pointer-events-auto -mb-2 transition-transform hover:scale-105 active:scale-95"
                 title="Happy Birthday Cake! 🎂 Tap to celebrate"
               >
-                <ChocolateCake size={isMobile ? 115 : 135} />
+                <img
+                  src="/photos/cake.jpeg"
+                  alt="Birthday Cake"
+                  style={{
+                    width: isMobile ? 115 : 135,
+                    height: isMobile ? 115 : 135,
+                    objectFit: "contain",
+                    borderRadius: "1rem",
+                    display: "block",
+                  }}
+                />
               </div>
 
               {/* Scroll cue */}
