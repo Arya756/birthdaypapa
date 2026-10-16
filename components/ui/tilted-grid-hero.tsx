@@ -22,7 +22,7 @@ function arc(bend: number) {
   return (CAMERA - 1 + Math.cos(bend)) / (2 * CAMERA * Math.sin(bend));
 }
 
-const MAX_WIDTH = 55;
+const DEFAULT_MAX_WIDTH = 55;
 
 function measure(
   width: number,
@@ -31,10 +31,11 @@ function measure(
   aspect: number,
   gap: number,
   bend: number,
+  maxWidth: number = DEFAULT_MAX_WIDTH,
 ) {
   const h = Math.min(
     (tile / 100) * height,
-    ((MAX_WIDTH / 100) * width) / aspect,
+    ((maxWidth / 100) * width) / aspect,
   );
   const radius = width * arc(bend);
   if (!(h > 0) || !(radius > 0))
@@ -68,6 +69,7 @@ export type TiltedGridHeroProps = {
   axis?: number;
   curve?: number;
   fade?: number;
+  maxWidth?: number;
   children?: React.ReactNode;
   className?: string;
 };
@@ -81,6 +83,7 @@ export function TiltedGridHero({
   axis = 56,
   curve = 80,
   fade = 12,
+  maxWidth = DEFAULT_MAX_WIDTH,
   children,
   className,
   ...props
@@ -110,7 +113,7 @@ export function TiltedGridHero({
   const tileRefs = React.useRef<(HTMLDivElement | null)[]>([]);
 
   const { columns, sweep, unit, limit } =
-    layout ?? measure(1200, 560, tileHeight, aspectRatio, gap, bend);
+    layout ?? measure(1200, 560, tileHeight, aspectRatio, gap, bend, maxWidth);
   const duration = columns * speed;
 
   // Apply current offsetRef to every tile's delay
@@ -166,7 +169,7 @@ export function TiltedGridHero({
       const containerH = ref.current?.clientHeight ?? window.innerHeight;
       const tilePx = Math.min(
         (tileHeight / 100) * containerH * aspectRatio,
-        (MAX_WIDTH / 100) * containerW,
+        (maxWidth / 100) * containerW,
       );
       const secPerPx = speed / Math.max(tilePx, 1);
       offsetRef.current += dx * secPerPx;
@@ -176,7 +179,7 @@ export function TiltedGridHero({
       else if (absVel < 0.15) setSpeedLabel("🐢 Slow");
       else setSpeedLabel("↔ Drag");
     },
-    [tileHeight, aspectRatio, speed],
+    [tileHeight, aspectRatio, maxWidth, speed],
   );
 
   const onPointerUp = React.useCallback(
@@ -191,23 +194,22 @@ export function TiltedGridHero({
       const containerH = ref.current?.clientHeight ?? window.innerHeight;
       const tilePx = Math.min(
         (tileHeight / 100) * containerH * aspectRatio,
-        (MAX_WIDTH / 100) * containerW,
+        (maxWidth / 100) * containerW,
       );
       const secPerPx = speed / Math.max(tilePx, 1);
       // Fling: extrapolate ~120 ms of momentum
       offsetRef.current += velRef.current * 120 * secPerPx;
       dragRef.current = null;
     },
-    [tileHeight, aspectRatio, speed],
+    [tileHeight, aspectRatio, maxWidth, speed],
   );
 
   // ── resize observer ───────────────────────────────────────────
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      const next = measure(width, height, tileHeight, aspectRatio, gap, bend);
+    const update = (w: number, h: number) => {
+      const next = measure(w, h, tileHeight, aspectRatio, gap, bend, maxWidth);
       setLayout((prev) =>
         prev?.columns === next.columns &&
         prev.sweep === next.sweep &&
@@ -215,10 +217,17 @@ export function TiltedGridHero({
           ? prev
           : next,
       );
+    };
+    if (el.clientWidth && el.clientHeight) {
+      update(el.clientWidth, el.clientHeight);
+    }
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      update(width, height);
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [tileHeight, aspectRatio, gap, bend]);
+  }, [tileHeight, aspectRatio, gap, bend, maxWidth]);
 
   React.useEffect(() => {
     for (const { src } of images) new Image().src = src;
@@ -231,7 +240,7 @@ export function TiltedGridHero({
 
   const u = (n: number) =>
     `calc(${+n.toFixed(4)} * min(${tileHeight}cqh, ${+(
-      MAX_WIDTH / aspectRatio
+      maxWidth / aspectRatio
     ).toFixed(4)}cqw))`;
 
   const r = 100 * arc(bend);

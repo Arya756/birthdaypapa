@@ -88,13 +88,14 @@ export default function Page() {
       >
         <TiltedGridHero
           images={IMAGES}
-          /* Half-size tiles on phone, full size on tablet+ */
-          tileHeight={isMobile ? 22 : 44}
+          /* Proportionate tiles on phone showing 3-4 images like desktop */
+          tileHeight={isMobile ? 18 : 44}
+          maxWidth={isMobile ? 28 : 55}
           aspectRatio={3 / 4}
-          axis={52}
+          axis={isMobile ? 50 : 52}
           speed={4}
-          curve={72}
-          fade={10}
+          curve={isMobile ? 56 : 72}
+          fade={isMobile ? 12 : 10}
           className="absolute inset-0"
         >
           {/* Heading sits above the carousel band */}
